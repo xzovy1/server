@@ -1,35 +1,23 @@
-import http from 'node:http';
-import fs from 'node:fs';
+const dotenv = require('dotenv').config();
+const express = require('express')
+const path = require('path')
 
-const PORT = 8080;
+const app = express();
+const PORT = dotenv.parsed.PATH || 8080;
 
-const server = http.createServer((req, res)=>{
-    
-    if(req.url == '/'){
-        res.setHeader('Location', '/home.html');
-        req.url = '/home.html';
+app.get(["/", '/:name'], (req, res) => {
+    console.log(res)
+    if(req.params.name == undefined)return res.sendFile(__dirname + '/home.html')
+    else if(req.params.name == 'contact' || req.params.name == 'about'){
+        res.sendFile(__dirname + '/' + req.params.name + '.html')
+    }else {
+        res.sendFile(__dirname + '/404.html')
     }
     
-    let fileName = "." + req.url;
-
-    fs.readFile(fileName, 'utf-8', (err, data) => {
-        if(err){
-            fs.readFile('./404.html', (err404, data404) => {
-                if(err404){
-                    res.writeHead(404, {'Content-Type': 'text/html'});
-                    return res.end('404 Not Found');
-                }
-                res.writeHead(404, {'Content-Type': 'text/html'});
-                return res.end(data404);
-            })
-        }
-        else{
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            
-            res.write(data);
-            return res.end();
-        }
-    })
 })
+// app.get("/", (req, res) => res.sendFile(__dirname + '/home.html'))
+// app.get("/about", (req, res) => res.sendFile(__dirname + '/about.html'))
+// app.get("/contact", (req, res) => res.sendFile(__dirname + '/contact.html'))
 
-server.listen(PORT ,()=> console.log(`Server running at http://localhost:${PORT}`))
+
+app.listen(PORT, ()=> console.log(`Server running at http://localhost:${PORT}`))
